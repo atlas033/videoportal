@@ -12,7 +12,26 @@
 include 'src.php';
 $conn = OpenCon();
 echo "Connected Successfully";
+
+// video variables
+$name = $email = $gender = $comment = $website = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  $name = test_input($_POST["name"]);
+  $email = test_input($_POST["email"]);
+  $website = test_input($_POST["website"]);
+  $comment = test_input($_POST["comment"]);
+  $gender = test_input($_POST["gender"]);
+}
+
+function test_input($data) {
+  $data = trim($data);
+  $data = stripslashes($data);
+  $data = htmlspecialchars($data);
+  return $data;
+}
 ?>
+
 
 <h1>NewTube - Ihr modernes Videoportal</h1>
 <p></p>
@@ -20,7 +39,7 @@ echo "Connected Successfully";
 <button type="button" name="button" onclick="newVideo()">neues Video hochladen</button>
 
 <div id="newVideoDiv" style="display: none;">
-  <form class="" action="submitnewvideo.html" method="post" onsubmit="checkform()">
+  <form class="" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" onsubmit="checkform()">
     <label>
       Titel:
       <input type="text" name="titel" value="">
