@@ -1,3 +1,38 @@
+<?php
+include("config.php");
+ 
+if(isset($_POST['newVideo'])){
+   if(isset($_FILES['file']['name']) && $_FILES['file']['name'] != ''){
+       $name = $_FILES['file']['name'];
+       $target_dir = "videos/";
+       $target_file = $target_dir . $_FILES["file"]["name"];
+
+       // Select file type
+       $extension = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+
+          // Check file size
+          if(($_FILES['file']['size'] >= $maxsize) || ($_FILES["file"]["size"] == 0)) {
+             $_SESSION['message'] = "File too large. File must be less than 5MB.";
+          }else{
+             // Upload
+             if(move_uploaded_file($_FILES['file']['tmp_name'],$target_file)){
+               // Insert record
+               $query = "INSERT INTO videos(name,location) VALUES('".$name."','".$target_file."')";
+
+               mysqli_query($con,$query);
+               $_SESSION['message'] = "Upload successfully.";
+             }
+          }
+
+       }
+       
+   }else{
+       $_SESSION['message'] = "Please select a file.";
+   }
+   header('location: index.php');
+   exit;
+} 
+?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 
@@ -9,12 +44,10 @@
 <body>
 
 <?php
-include 'src.php';
 $conn = OpenCon();
-echo "Connected Successfully";
 
 // video variables
-$name = $email = $gender = $comment = $website = "";
+$titel = $dauer = $regisseur = $schauspieler = $website = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $name = test_input($_POST["name"]);
@@ -39,7 +72,7 @@ function test_input($data) {
 <button type="button" name="button" onclick="newVideo()">neues Video hochladen</button>
 
 <div id="newVideoDiv" style="display: none;">
-  <form class="" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" onsubmit="checkform()">
+  <form class="" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" onsubmit="checkform()" enctype='multipart/form-data'>
     <label>
       Titel:
       <input type="text" name="titel" value="">
@@ -49,37 +82,49 @@ function test_input($data) {
       <input type="time" name="dauer" value="">
     </label>
     <label>
-      Schauspieler:
-      <input type="text" name="schauspieler" value="">
-    </label>
-    <label>
       Regisseur:
       <input type="text" name="regisseur" value="">
     </label>
     <label>
-      Video auswählen:
-      <input type="" name="video" value="">
+      Schauspieler:
+      <input type="text" name="schauspieler" value="">
     </label>
-    <button type="submit" name="button">Video hochladen</button>
+    <label>
+      Video auswählen:
+      <input type="file" name="video" value="Upload">
+    </label>
+    <button type="submit" value="Upload" name="newVideo">Video hochladen</button>
   </form>
 </div>
-<?php
-
+<?php 
+    if(isset($_SESSION['message_new'])){
+       echo $_SESSION['message_new'];
+       unset($_SESSION['message_new']);
+    }
 ?>
-<!-- php ; errormsg ; video auswahlen fehlt -->
 
 
 <hr>
 
-<?php
+<div>
+ 
+     <?php
+     $fetchVideos = mysqli_query($con, "SELECT * FROM videos ORDER BY id DESC");
+     while($row = mysqli_fetch_assoc($fetchVideos)){
+       $video = $row['video'];
+       $titel = $row['titel'];
+       echo "<div style='float: left; margin-right: 5px;'>
+          <video src='".$video."' controls width='320px' height='320px' ></video>     
+          <br>
+          <span>".$titel."</span>
+       </div>";
+     }
+     CloseCon($conn);
+     ?>
+ 
+    </div>
 
-$result = $conn->query('SELECT * FROM info');
-$row = $result->fetch_assoc();
-echo htmlentities($row);
-
-
-
-// Ausgabe der Ergebnisse in HTML
+<!-- // Ausgabe der Ergebnisse in HTML
 // echo "<table>";
 // while ($line = mysqli_fetch_array($result, MYSQL_ASSOC)) {
 //     echo "<tr>";
@@ -92,10 +137,10 @@ echo htmlentities($row);
 // echo "</table>";
 
 // // Free resultset
-// mysql_free_result($result);
+// mysql_free_result($result); -->
 
-CloseCon($conn);
-?>
+
+
 
 <!-- video titel per php und datenbank anzeigen; dauer; abspielbutton;
   neue zeile: xmlansicht button; edit button; loeschen button-->
