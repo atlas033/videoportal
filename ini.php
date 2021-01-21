@@ -23,10 +23,9 @@ if ($conn->connect_error) {
 $sql = "CREATE TABLE videos (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     titel VARCHAR(50) NOT NULL,
-    dauer TIME NOT NULL,
+    dauer TIME,
     regisseur VARCHAR(50),
-    schauspieler VARCHAR(255),
-    video LONGBLOB,
+    video LONGBLOB NOT NULL,
     videoformat VARCHAR(3) NOT NULL
     );";
 
