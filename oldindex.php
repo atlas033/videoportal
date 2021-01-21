@@ -9,17 +9,18 @@ if(isset($_POST['newVideo'])){
     $_SESSION['message_new'] = "Titel fehlt.";
   } 
   else {
-    $target_file = $_FILES["video"]["name"];
 
-    if(move_uploaded_file($_FILES['video']['tmp_name'],$target_file)){
-      $extension = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
-          
-      $query = "INSERT INTO videos(titel, dauer, regisseur, video, videoformat) VALUES('".$_POST['titel']."','".$_POST['dauer']."','".$_POST['regisseur']."','".$target_filer."','".$extension."')";
+    $extension = strtolower(pathinfo($_FILES['video']['name'],PATHINFO_EXTENSION));
+    
+    
+    $vid = addslashes(file_get_contents($_FILES['video']['tmp_name']));
+    $vid = mysqli_real_escape_string($conn, $vid);
+    
+    $query = "INSERT INTO videos(titel, dauer, regisseur, video, videoformat) VALUES('".$_POST['titel']."','".$_POST['dauer']."','".$_POST['regisseur']."','{$vid}','".$extension."')";
 
       mysqli_query($conn,$query);
       $_SESSION['message_new'] = "Hochladen erfolgreich.";
-      unlink($target_file);
-    }
+    
   }
 }
 
@@ -107,17 +108,18 @@ if (count($_POST) > 0) {
   <?php
   $fetchVideos = mysqli_query($conn, "SELECT * FROM videos ORDER BY id DESC");
   while($row = mysqli_fetch_assoc($fetchVideos)){
+    $id = $row['id'];
     $video = $row['video'];
     $titel = $row['titel'];
     echo "<div style='float: left; margin-right: 5px;'>
       <hr>
-      <video src='".$video."' controls width='320px' height='320px' ></video>     
+      <video src='getVideo.php?id=".$id."' controls width='320px' height='320px' ></video>     
       <br>
       <p>".$titel."</p>
 
       <form action='oldindex.php' method='post' enctype=''>
         <input type='submit' value='Bearbeiten' name='edit'></input>
-      </form>
+      </form> 
 
       <form action='oldindex.php' method='post' enctype=''>
         <input type='submit' value='Löschen' name='delete'></input>
